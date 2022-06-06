@@ -10,8 +10,16 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen name='Home' component={HomeScreen} />
-        <Stack.Screen name='SubProgram' component={SubProgramScreen} />
-        <Stack.Screen name='Activity' component={ActivityScreen} />
+        <Stack.Screen
+          name='SubProgram'
+          options={{ headerTitle: 'Sous Programmes' }}
+          component={SubProgramScreen}
+        />
+        <Stack.Screen
+          name='Activity'
+          options={{ headerTitle: 'Activité' }}
+          component={ActivityScreen}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

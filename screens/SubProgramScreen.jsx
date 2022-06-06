@@ -21,13 +21,9 @@ function SubProgramScreen(props) {
 
   const [subProgramsData] = useState(data);
 
-  const handlePress = (_id, title, video_url, poster_image, duration_indicator) => {
+  const handlePress = (item) => {
     props.navigation.navigate('Activity', {
-      _id,
-      title,
-      video_url,
-      poster_image,
-      duration_indicator
+      item,
     });
   };
 
@@ -46,14 +42,13 @@ function SubProgramScreen(props) {
 
   const renderItem = ({ item, index }) => {
     return (
-      console.log(item),
-      <SubProgram
-        item={item}
-        index={index}
-        handlePress={() =>
-          handlePress(item._id, item.title, item.video_url, item.poster_image, item.duration_indicator)
-        }
-      />
+      (
+        <SubProgram
+          item={item}
+          index={index}
+          handlePress={() => handlePress(item)}
+        />
+      )
     );
   };
 
