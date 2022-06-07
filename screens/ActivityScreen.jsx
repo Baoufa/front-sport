@@ -150,8 +150,8 @@ function ActivityScreen(props) {
             thumbProps={{
               children: (
                 <Icon
-                  name='heartbeat'
-                  type='font-awesome'
+                  name='code'
+                  type='feather'
                   size={10}
                   reverse
                   containerStyle={{ bottom: 10, right: 10 }}

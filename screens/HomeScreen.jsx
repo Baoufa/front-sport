@@ -3,6 +3,7 @@ import {
   StyleSheet,
   View,
   FlatList,
+  Text,
   SafeAreaView,
   ActivityIndicator,
   RefreshControl,
@@ -10,12 +11,24 @@ import {
 import Program from '../components/Program';
 import ProgramList from '../data/ProgramList';
 
-const HomeScreen = ({navigation} ) => {
+import { useQuery } from '@apollo/client';
+import { programsQuery } from '../graphql/queries';
+// import { activitiesQuery } from '../graphql/queries';
+
+const HomeScreen = ({ navigation }) => {
   const SEP_HEIGHT = 10; // height of the separator
   const [itemHeight, setItemHeight] = useState(null);
-  const [loading, setLoading] = useState(true);
+  //const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [programsData] = useState(ProgramList);
+
+  const { loading, error, data, refetch } = useQuery(programsQuery);
+
+  useEffect(() => {
+    console.log('error:', error);
+    console.log('data:', data);
+    console.log('loading:', loading);
+  }, [data, error, loading]);
 
   const handlePress = (_id, level, name, background) => {
     navigation.navigate('SubProgram', {
@@ -25,12 +38,6 @@ const HomeScreen = ({navigation} ) => {
       mainColor: background,
     });
   };
-
-  useEffect(() => {
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
