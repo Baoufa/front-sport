@@ -1,57 +1,62 @@
-import { Text, View, Alert, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { WebView } from 'react-native-webview';
 import YoutubePlayer from 'react-native-youtube-iframe';
-import { Icon, Button } from '@rneui/themed';
+import { Icon } from '@rneui/themed';
 import { Slider } from '@rneui/themed';
-
+import Timer from '../components/Timer';
+0;
 function ActivityScreen(props) {
   const FORWARD_AND_BACKWARD = 10; // in seconds
-
   const { video_url, title } = props.route.params.item;
   const playerRef = useRef();
   const interval = useRef();
   const forward_backward = useRef();
-
   const [playing, setPlaying] = useState(false);
+  const [wasPlaying, setWasPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [remainingTime, setRemainingTime] = useState(
     props.route.params.item.duration_indicator
   );
   const [totalTime, setTotalTime] = useState(remainingTime);
   const [elapsedTime, setElapsedTime] = useState(0);
-
   const [isTimerStarted, setIsTimerStarted] = useState(false);
-  const [formattedTime, setFormattedTime] = useState('');
 
   const onReadyHandler = () => {
     setIsLoading(false);
     playerRef.current.getDuration().then(duration => setTotalTime(duration));
   };
 
-  const [isCached, setIsCached] = useState(false);
-
-  const onSliderStartHandler = () => {
-    if(playing) {
-      clearInterval(interval.current);
-      setPlaying(false);
-      setIsCached(true);
-    }
-  };
-
-  const onSliderCompleteHandler = () => {
-    if(isCached) {
+  const onSlidingCompletetHandler = event => {
+    if (wasPlaying) {
       setPlaying(true);
-      setIsCached(false);
+      setWasPlaying(false);
+    }
+    playerRef.current.seekTo(elapsedTime, true);
+  };
+
+  const onSlidingStartHandler = () => {
+    if (playing) {
+      setWasPlaying(true);
+      setPlaying(false);
     }
   };
 
-  const seekTo = time => {
-    setIsTimerStarted(true);
-    setElapsedTime(time);
-    setRemainingTime(totalTime - time);
-    playerRef.current.seekTo(time);
+  const muteHandler = () => {
+    playerRef.current.isMuted().then(bool => setIsMuted(!bool));
   };
+
+  const seekTo = useCallback(time => {
+    setIsTimerStarted(true);
+    setRemainingTime(totalTime - time);
+    setElapsedTime(time);
+
+    playerRef.current.seekTo(time, true);
+    // playerRef.current.getCurrentTime().then(currentTime => {
+    //   // setElapsedTime(time);
+    //   //
+    // };
+  });
 
   const onStateChange = useCallback(state => {
     console.log(state);
@@ -63,9 +68,6 @@ function ActivityScreen(props) {
     }
     if (state === 'playing') {
       setPlaying(true);
-    }
-    if (state === 'buffering') {
-      setPlaying(false);
     }
   }, []);
 
@@ -80,7 +82,7 @@ function ActivityScreen(props) {
 
   const pressOutHandler = () => {
     clearInterval(forward_backward.current);
-    //setPlaying(true);
+    setPlaying(true);
   };
 
   const togglePlaying = useCallback(() => {
@@ -88,46 +90,32 @@ function ActivityScreen(props) {
   }, []);
 
   useEffect(() => {
+    props.navigation.setOptions({
+      headerTitle: title,
+    });
+  }, []);
+
+  useEffect(() => {
     clearInterval(interval.current);
     if (playing) {
-      interval.current = setInterval(async () => {
+      interval.current = setInterval(() => {
         playerRef.current.getCurrentTime().then(time => {
           setIsTimerStarted(true);
-          setElapsedTime(time);
+          //   setElapsedTime(time);
           setRemainingTime(totalTime - time);
         });
       }, 200);
     }
+    // else {
+    //   if (isTimerStarted) {
+    //     playerRef.current.getCurrentTime().then(time => {
+    //       setElapsedTime(time);
+    //       setRemainingTime(totalTime - time);
+    //     });
+    //   }
+    // }
     return () => clearInterval(interval.current);
   }, [playing, totalTime]);
-
-  useEffect(() => {
-    if (!isTimerStarted) {
-      setFormattedTime(`${remainingTime / 100} min`);
-    }
-
-    if (isTimerStarted) {
-      let minutes =
-        Math.floor(remainingTime / 60) <= 0
-          ? '00'
-          : Math.floor(remainingTime / 60)
-              .toString()
-              .padStart(2, '0');
-      let seconds =
-        Math.floor(remainingTime % 60) <= 0
-          ? '00'
-          : Math.floor(remainingTime % 60)
-              .toString()
-              .padStart(2, '0');
-      let milliseconds =
-        Math.floor((remainingTime * 100) % 100) <= 0
-          ? '00'
-          : Math.floor((remainingTime * 100) % 100)
-              .toString()
-              .padStart(2, '0');
-      setFormattedTime(`${minutes} : ${seconds}`);
-    }
-  }, [remainingTime, isTimerStarted]);
 
   return (
     <View style={styles.container}>
@@ -139,52 +127,57 @@ function ActivityScreen(props) {
         onChangeState={onStateChange}
         onReady={onReadyHandler}
         initialPlayerParams={{ controls: false }}
+        mute={isMuted}
       />
-      {!isLoading && (
 
+      {!isLoading && (
         <View style={styles.sliderContainer}>
-        <Slider
-          value={elapsedTime}
-          onSlidingStart={onSliderStartHandler}
-          onSlidingComplete={onSliderCompleteHandler}
-          onValueChange={seekTo}
-          maximumValue={totalTime}
-          minimumValue={0}
-          step={1}
-          allowTouchTrack
-          trackStyle={{ height: 5, backgroundColor: 'transparent' }}
-          thumbStyle={{ height: 20, width: 20, backgroundColor: 'transparent' }}
-          thumbProps={{
-            children: (
-              <Icon
-                name='heartbeat'
-                type='font-awesome'
-                size={20}
-                reverse
-                containerStyle={{ bottom: 20, right: 20 }}
-              />
-            ),
-          }}
-        />
+          <Slider
+            value={elapsedTime}
+            onSlidingStart={onSlidingStartHandler}
+            onSlidingComplete={onSlidingCompletetHandler}
+            onValueChange={seekTo}
+            maximumValue={totalTime}
+            minimumValue={0}
+            step={1}
+            allowTouchTrack
+            trackStyle={{ height: 5, backgroundColor: 'transparent' }}
+            thumbStyle={{
+              height: 20,
+              width: 20,
+              backgroundColor: 'transparent',
+            }}
+            thumbProps={{
+              children: (
+                <Icon
+                  name='heartbeat'
+                  type='font-awesome'
+                  size={10}
+                  reverse
+                  containerStyle={{ bottom: 10, right: 10 }}
+                />
+              ),
+            }}
+          />
         </View>
       )}
 
-      <Text style={styles.title}>{title}</Text>
+      {/* <Text style={styles.title}>{title}</Text> */}
 
-      {isLoading && <ActivityIndicator size='large' color='#8000ff' />}
+      {isLoading && (
+        <ActivityIndicator
+          size='large'
+          color='#8000ff'
+          style={{ marginTop: 100 }}
+        />
+      )}
 
       {!isLoading && (
         <View style={styles.bottom}>
-          <Text
-            style={[
-              styles.timer,
-              remainingTime > 300 ? styles.timerNormal : '',
-              remainingTime <= 300 ? styles.timerWarning : '',
-              remainingTime <= 60 ? styles.timerDanger : '',
-            ]}
-          >
-            {formattedTime}
-          </Text>
+          <Timer
+            remainingTime={remainingTime}
+            isTimerStarted={isTimerStarted}
+          />
 
           <View style={styles.navContainer}>
             <Icon
@@ -211,13 +204,22 @@ function ActivityScreen(props) {
               onPressOut={pressOutHandler}
             />
           </View>
-          <Icon
-            color='black'
-            size={80}
-            name='ios-reload-circle-outline'
-            type='ionicon'
-            onPress={() => seekTo(0)}
-          />
+          <View style={styles.navContainer}>
+            <Icon
+              color='black'
+              size={80}
+              name='ios-reload-circle-outline'
+              type='ionicon'
+              onPress={() => seekTo(0)}
+            />
+            <Icon
+              color='black'
+              size={80}
+              name={isMuted ? 'volume-off' : 'volume-up'}
+              type='fontawesome'
+              onPress={muteHandler}
+            />
+          </View>
         </View>
       )}
     </View>
@@ -235,15 +237,16 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    marginTop: 20,
-    marginBottom: 70,
+    //marginTop: 20,
+    // marginBottom: 70,
     marginHorizontal: 10,
     fontSize: 22,
     fontWeight: 'bold',
   },
 
   bottom: {
-    flex: 0.7,
+    flex: 0.9,
+    // backgroundColor: 'red',
     justifyContent: 'space-around',
     marginHorizontal: 20,
   },
@@ -252,37 +255,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    //marginBottom: 40,
   },
 
   navButton: {
     overflow: 'hidden',
-  },
-
-  timer: {
-    alignSelf: 'center',
-    backgroundColor: 'green',
-    color: 'white',
-    textAlign: 'center',
-    width: 300,
-    fontSize: 40,
-    padding: 10,
-    paddingHorizontal: 30,
-    borderRadius: 10,
-    overflow: 'hidden',
-    marginBottom: 50,
-  },
-
-  timerNormal: {
-    backgroundColor: 'green',
-  },
-
-  timerDanger: {
-    backgroundColor: 'red',
-  },
-
-  timerWarning: {
-    backgroundColor: 'orange',
   },
 });
 

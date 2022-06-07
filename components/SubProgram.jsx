@@ -4,13 +4,13 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Image
 } from 'react-native';
+import { Image,  Skeleton  } from '@rneui/themed';
 //import { icon } from 'react-native-elements';
 
 
 
-const SubProgram = ({ item, height, index, handlePress }) => {
+const SubProgram = ({ item, index, handlePress }) => {
 //  TouchableOpacity.defaultProps = { activeOpacity: .1 };
   
   const {_id, title, program, video_url, poster_image, duration_indicator, order} = item;
@@ -25,6 +25,7 @@ const SubProgram = ({ item, height, index, handlePress }) => {
   >
        <Image
         style={styles.container__image}
+        PlaceholderContent={<Skeleton width={100} height={400} animation="wave" />}
         source={{
           uri: poster_image
         }}
