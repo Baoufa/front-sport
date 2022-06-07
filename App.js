@@ -1,5 +1,7 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import 'dotenv/config'; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
+
 import HomeScreen from './screens/HomeScreen.jsx';
 import SubProgramScreen from './screens/SubProgramScreen.jsx';
 import ActivityScreen from './screens/ActivityScreen.jsx';
