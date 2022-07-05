@@ -20,7 +20,7 @@ const SubProgram = ({ item, index, handlePress }) => {
     onPress={handlePress}
     style={[
       styles.container,
-      { backgroundColor: index % 2 ? 'lightgrey' : 'white' }
+      { backgroundColor: index % 2 ? '#fef2f2' : 'white' }
     ]}
   >
        <Image
@@ -37,6 +37,7 @@ const SubProgram = ({ item, index, handlePress }) => {
             style={styles.container__icon}
             type='feather'
             name='clock'
+            color='white'
           />
           <Text style={styles.container__desc}>{duration_indicator / 100} min</Text>
         </View>
@@ -50,6 +51,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 8,
+    borderRadius: 25,
+    overflow: 'hidden',
   },
 
   container__image: {
@@ -69,22 +72,30 @@ const styles = StyleSheet.create({
 
   container__upper: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: '700',
+    color: '#ef4444'
   },
 
   container__lower: {
     flexDirection: 'row',
     alignItems: 'flex-end',
+    backgroundColor: '#fca5a5',
+    padding: 5,
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    borderRadius: 10,
+ 
   },
 
   container__icon: {
     flex: 0,
     marginRight: 5,
+
   },
 
   container__desc: {
     fontWeight: '500',
-    color: 'red'
+    color: 'white',
   },
 });
 

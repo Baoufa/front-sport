@@ -1,34 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   StyleSheet,
   View,
   FlatList,
-  Text,
   SafeAreaView,
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
-import Program from '../components/Program';
-import ProgramList from '../data/ProgramList';
-
 import { useQuery } from '@apollo/client';
+
+import Program from '../components/Program';
 import { programsQuery } from '../graphql/queries';
-// import { activitiesQuery } from '../graphql/queries';
+import useAuthContext from '../hooks/useAuthContext.js';
 
 const HomeScreen = ({ navigation }) => {
   const SEP_HEIGHT = 10; // height of the separator
   const [itemHeight, setItemHeight] = useState(null);
-  //const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [programsData] = useState(ProgramList);
 
-  const { loading, error, data, refetch } = useQuery(programsQuery);
+  const context = useAuthContext();
+  console.log(context);
 
-  useEffect(() => {
-    console.log('error:', error);
-    console.log('data:', data);
-    console.log('loading:', loading);
-  }, [data, error, loading]);
+  const { loading, error, data, refetch } = useQuery(programsQuery, {
+    variables: { sort: 'asc' },
+  });
 
   const handlePress = (_id, level, name, background) => {
     navigation.navigate('SubProgram', {
@@ -69,8 +64,8 @@ const HomeScreen = ({ navigation }) => {
           onLayout={event => {
             const { x, y, width, height } = event.nativeEvent.layout;
             setItemHeight(
-              (height - SEP_HEIGHT * (programsData.length - 1)) /
-                programsData.length
+              (height - SEP_HEIGHT * (data.programs.length - 1)) /
+                data.programs.length
             );
           }}
           refreshControl={
@@ -80,7 +75,7 @@ const HomeScreen = ({ navigation }) => {
             flex: 1,
           }}
           ItemSeparatorComponent={() => <View style={{ height: SEP_HEIGHT }} />}
-          data={programsData}
+          data={data.programs}
           renderItem={renderItem}
           keyExtractor={item => item._id}
         />

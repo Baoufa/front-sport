@@ -1,43 +1,37 @@
+import { useState } from 'react';
+
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import 'dotenv/config'; // see https://github.com/motdotla/dotenv#how-do-i-use-dotenv-with-import
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import HomeNavigator from './navigators/HomeNavigator.jsx';
+import HistoricNavigator from './navigators/HistoricNavigator.jsx';
+import AuthNavigator from './navigators/AuthNavigator.jsx';
+import AppNavigation from './navigators/AppNavigation.jsx';
 
-import HomeScreen from './screens/HomeScreen.jsx';
-import SubProgramScreen from './screens/SubProgramScreen.jsx';
-import ActivityScreen from './screens/ActivityScreen.jsx';
+import AuthContext from './context/AuthContext.jsx';
 
+import { Icon } from '@rneui/themed';
 
-import {
-  ApolloClient,
-  InMemoryCache,
-  ApolloProvider,
-} from '@apollo/client';
-
-const Stack = createNativeStackNavigator();
+import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 
 const client = new ApolloClient({
   uri: 'http://192.168.1.55:4000/graphql',
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({ addTypename: false }),
 });
 
+const Tab = createMaterialTopTabNavigator();
+const Stack = createNativeStackNavigator();
+
 export default function App() {
+
+
   return (
     <ApolloProvider client={client}>
-      <NavigationContainer>
-        <Stack.Navigator>
-          <Stack.Screen name='Home' component={HomeScreen} />
-          <Stack.Screen
-            name='SubProgram'
-            options={{ headerTitle: 'Sous Programmes' }}
-            component={SubProgramScreen}
-          />
-          <Stack.Screen
-            name='Activity'
-            options={{ headerTitle: 'Activité' }}
-            component={ActivityScreen}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
+      <AuthContext>
+        <NavigationContainer>
+          <AppNavigation />
+        </NavigationContainer>
+      </AuthContext>
     </ApolloProvider>
   );
 }

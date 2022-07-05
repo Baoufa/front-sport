@@ -9,16 +9,46 @@ import Timer from '../components/activity/Timer';
 import { activityQuery, getPrevNextQuery } from '../graphql/queries';
 import SliderNavigation from '../components/activity/SliderNavigation';
 
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'SET_TOTAL_TIME':
+      state.totalTime = action.payload;
+
+    case 'PLAYING':
+      state.isPlaying = true;
+
+      if (action.payload) {
+        state.elapsedTime = action.payload;
+        state.remainingTime = state.totalTime - state.elapsedTime;
+      }
+      return state;
+
+    case 'PAUSED':
+      state.isPlaying = false;
+      return state;
+
+    case 'SEEK_TO':
+      state.elapsedTime = action.payload;
+      state.remainingTime = state.totalTime - state.elapsedTime;
+      return state;
+
+    default:
+      return state;
+  }
+};
 
 function ActivityScreen(props) {
   const FORWARD_AND_BACKWARD = 10; // in seconds
   const playerRef = useRef();
   const interval = useRef();
   const forward_backward = useRef();
+
   const [playing, setPlaying] = useState(false);
   const [wasPlaying, setWasPlaying] = useState(false);
+
   const [isMuted, setIsMuted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
   const [remainingTime, setRemainingTime] = useState(
     props.route.params.item.duration_indicator
   );
@@ -27,8 +57,10 @@ function ActivityScreen(props) {
   );
   const [elapsedTime, setElapsedTime] = useState(0);
   const [isTimerStarted, setIsTimerStarted] = useState(false);
+
   const { title, order, program } = props.route.params.item;
-  const [state, dispatch] = useReducer(reducer, initialCount, init);
+
+  const [state, dispatch] = useReducer(reducer, {}, init);
 
   const { loading, error, data, refetch } = useQuery(activityQuery, {
     variables: { id: props.route.params.item._id },
@@ -53,7 +85,11 @@ function ActivityScreen(props) {
   const onReadyHandler = () => {
     setIsLoading(false);
     if (playerRef.current) {
-      playerRef.current.getDuration().then(duration => setTotalTime(duration));
+      playerRef.current
+        .getDuration()
+        .then(duration =>
+          dispatch({ type: 'SET_TOTAL_TIME', payload: duration })
+        );
     }
   };
 
@@ -90,15 +126,15 @@ function ActivityScreen(props) {
     }
   });
 
-  const onStateChange = useCallback(state => {
-    if (state === 'ended') {
-      setPlaying(false);
+  const onStateChange = useCallback(playerState => {
+    if (playerState === 'ended') {
+      dispatch({ type: 'PAUSED' });
     }
-    if (state === 'paused') {
-      setPlaying(false);
+    if (playerState === 'paused') {
+      dispatch({ type: 'PAUSED' });
     }
-    if (state === 'playing') {
-      setPlaying(true);
+    if (playerState === 'playing') {
+      dispatch({ type: 'PLAYING' });
     }
   }, []);
 
@@ -115,11 +151,18 @@ function ActivityScreen(props) {
 
   const pressOutHandler = () => {
     clearInterval(forward_backward.current);
-    setPlaying(true);
+    dispatch({ type: 'PLAYING' });
   };
 
   const togglePlaying = useCallback(() => {
-    setPlaying(prev => !prev);
+    if(state.isPlaying) {
+      dispatch({ type: 'PAUSED' });
+    }
+
+    if(!state.isPlaying) {
+      dispatch({ type: 'PLAYING' });
+    }
+
   }, []);
 
   useEffect(() => {
@@ -130,7 +173,7 @@ function ActivityScreen(props) {
 
   useEffect(() => {
     clearInterval(interval.current);
-    if (playing && playerRef.current) {
+    if (state.isPlaying && playerRef.current) {
       interval.current = setInterval(async () => {
         const time = await playerRef.current.getCurrentTime();
         setIsTimerStarted(true);

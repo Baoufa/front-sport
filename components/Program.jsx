@@ -6,11 +6,10 @@ import {
   ImageBackground,
   TouchableOpacity,
 } from 'react-native';
-import { Skeleton } from "@rneui/themed";
-
 
 const Program = ({ item, height, index, handlePress }) => {
 //  TouchableOpacity.defaultProps = { activeOpacity: .1 };
+
 
   return (
     <TouchableOpacity
@@ -42,6 +41,7 @@ const Program = ({ item, height, index, handlePress }) => {
             style={styles.container__icon}
             type='feather'
             name={item.icon}
+            color='#fff'
           />
           <Text style={styles.container__desc}>{item.description}</Text>
         </View>
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   container__lower: {
     padding: 15,
     flexDirection: 'row',
-    backgroundColor: 'lightgrey',
+    backgroundColor: '#ef4444',
     alignItems: 'center',
   },
 
@@ -83,6 +83,7 @@ const styles = StyleSheet.create({
   container__desc: {
     flex: 1,
     marginLeft: 10,
+    color: 'white',
   },
 });
 

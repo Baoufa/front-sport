@@ -22,12 +22,6 @@ const Timer = ({ remainingTime, isTimerStarted }) => {
           : Math.floor(remainingTime % 60)
               .toString()
               .padStart(2, '0');
-      // let milliseconds =
-      //   Math.floor((remainingTime * 100) % 100) <= 0
-      //     ? '00'
-      //     : Math.floor((remainingTime * 100) % 100)
-      //         .toString()
-      //         .padStart(2, '0');
       setFormattedTime(`${minutes} : ${seconds}`);
     }
   }, [remainingTime, isTimerStarted]);
@@ -48,11 +42,11 @@ const Timer = ({ remainingTime, isTimerStarted }) => {
 
 const styles = StyleSheet.create({
   timer: {
-    alignSelf: 'center',
+ 
     backgroundColor: 'green',
     color: 'white',
     textAlign: 'center',
-    width: 300,
+
     fontSize: 40,
     padding: 10,
     paddingHorizontal: 30,
@@ -62,15 +56,15 @@ const styles = StyleSheet.create({
   },
 
   timerNormal: {
-    backgroundColor: 'green',
+    backgroundColor: '#10b981',
   },
 
   timerDanger: {
-    backgroundColor: 'red',
+    backgroundColor: '#ef4444',
   },
 
   timerWarning: {
-    backgroundColor: 'orange',
+    backgroundColor: '#f97316',
   },
 });
 
